@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once '../../config/Database.php';
 require_once '../../Models/RoomModel.php';
 require_once '../../Controllers/RoomController.php';
@@ -26,6 +26,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $id = $_POST['id'];
             $result = $roomController->deleteRoom($id);
             $message = $result['message'];
+        } elseif ($action === 'import') {
+            if (isset($_FILES['import_file']) && $_FILES['import_file']['error'] === UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['import_file']['tmp_name'];
+                $file_ext = pathinfo($_FILES['import_file']['name'], PATHINFO_EXTENSION);
+                if (strtolower($file_ext) === 'csv') {
+                    $handle = fopen($file_tmp, "r");
+                    // Read header row
+                    $header = fgetcsv($handle, 1000, ",");
+                    $imported = 0;
+                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        if (count($data) >= 3) {
+                            $name = trim($data[0]);
+                            $rows = (int)$data[1];
+                            $cols = (int)$data[2];
+                            if ($name && $rows > 0 && $cols > 0) {
+                                $roomController->addRoom($cinema_id, $name, $rows, $cols);
+                                $imported++;
+                            }
+                        }
+                    }
+                    fclose($handle);
+                    $message = "Đã import thành công $imported phòng chiếu.";
+                } else {
+                    $message = "Chỉ hỗ trợ file CSV.";
+                }
+            } else {
+                $message = "Lỗi upload file.";
+            }
         }
     }
 }
@@ -51,10 +79,16 @@ ob_start();
 
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Quản lý Phòng chiếu (Thuộc rạp #<?php echo htmlspecialchars($cinema_id); ?>)</h1>
-    <button onclick="openModal('addRoomModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm flex items-center">
-        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Thêm phòng chiếu
-    </button>
+    <div class="flex space-x-2">
+        <button onclick="openModal('importRoomModal')" class="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 transition shadow-sm flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Import CSV
+        </button>
+        <button onclick="openModal('addRoomModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Thêm phòng chiếu
+        </button>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -120,6 +154,26 @@ ob_start();
             <div class="flex justify-end space-x-3">
                 <button type="button" onclick="closeModal('addRoomModal')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition">Hủy</button>
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">Lưu & Tạo phòng</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Import Room Modal -->
+<div id="importRoomModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity">
+    <div class="relative top-20 mx-auto p-6 border w-full max-w-md shadow-2xl rounded-xl bg-white">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Import phòng chiếu</h3>
+        <p class="text-sm text-gray-500 mb-4">Tải lên file CSV chứa danh sách phòng chiếu. File CSV cần có 3 cột: Tên phòng, Số hàng ghế, Số cột ghế (Cột đầu tiên là tiêu đề sẽ bị bỏ qua).</p>
+        <p class="text-sm text-gray-500 mb-4">Ví dụ:<br/><code>Tên phòng, Số hàng ghế, Số cột ghế<br/>IMAX 1, 10, 15<br/>Room 2, 8, 12</code></p>
+        <form method="POST" action="rooms.php?cinema_id=<?php echo $cinema_id; ?>" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="import">
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">File CSV</label>
+                <input type="file" name="import_file" accept=".csv" required class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('importRoomModal')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition">Hủy</button>
+                <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition">Tải lên & Import</button>
             </div>
         </form>
     </div>
