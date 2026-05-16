@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once '../../config/Database.php';
 require_once '../../Models/CinemaModel.php';
 require_once '../../Controllers/CinemaController.php';
@@ -41,15 +41,22 @@ ob_start();
     </div>
 <?php endif; ?>
 
-<div class="flex justify-between items-center mb-6">
+<div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
     <h1 class="text-2xl font-bold text-gray-800">Quản lý Rạp chiếu</h1>
-    <button onclick="openModal('addModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm">
-        + Thêm Rạp chiếu
-    </button>
+    <div class="flex items-center space-x-2">
+        <div class="relative">
+            <input type="text" id="searchInput" onkeyup="filterTable('searchInput', 'dataTable')" placeholder="Tìm kiếm rạp..." class="pl-9 pr-4 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 text-sm w-64 transition-all">
+            <svg class="w-4 h-4 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+        </div>
+        <button onclick="openModal('addModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Thêm Rạp chiếu
+        </button>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-    <table class="w-full text-left border-collapse">
+    <table id="dataTable" class="w-full text-left border-collapse">
         <thead>
             <tr class="bg-gray-50 border-b border-gray-100">
                 <th class="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">ID</th>

@@ -113,6 +113,32 @@
             if(modal) modal.classList.add('hidden');
         }
 
+        // Search/Filter table rows
+        function filterTable(inputId, tableId) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            const filter = input.value.toLowerCase();
+            const table = document.getElementById(tableId);
+            if (!table) return;
+            const tbody = table.querySelector("tbody");
+            if (!tbody) return;
+            const rows = tbody.querySelectorAll("tr");
+
+            rows.forEach(row => {
+                // Skip rows that span multiple columns (usually 'No data found' rows)
+                const cells = row.querySelectorAll("td");
+                if (cells.length === 1 && cells[0].hasAttribute("colspan")) return;
+                
+                const text = row.textContent.toLowerCase();
+                if (text.includes(filter)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+
         // Move all modals to body to prevent 'transform' or 'overflow' containing block issues
         document.addEventListener('DOMContentLoaded', () => {
             const modals = document.querySelectorAll('[id$="Modal"]');
