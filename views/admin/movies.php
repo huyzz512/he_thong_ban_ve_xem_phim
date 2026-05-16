@@ -1,4 +1,7 @@
-﻿<?php
+<?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../../config/Database.php';
 require_once '../../Models/MovieModel.php';
 require_once '../../Controllers/MovieController.php';
@@ -28,8 +31,51 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } elseif ($action === 'delete' && $id) {
             $result = $movieController->deleteMovie($id);
             $message = $result['message'];
+        } elseif ($action === 'import') {
+            if (isset($_FILES['import_file']) && $_FILES['import_file']['error'] === UPLOAD_ERR_OK) {
+                $file_tmp = $_FILES['import_file']['tmp_name'];
+                $file_ext = pathinfo($_FILES['import_file']['name'], PATHINFO_EXTENSION);
+                if (strtolower($file_ext) === 'csv') {
+                    $handle = fopen($file_tmp, "r");
+                    // Read header row
+                    $header = fgetcsv($handle, 1000, ",");
+                    $imported = 0;
+                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                        if (count($data) >= 3) {
+                            $csv_title = trim($data[0] ?? '');
+                            $csv_desc = trim($data[1] ?? '');
+                            $csv_duration = (int)($data[2] ?? 0);
+                            $csv_banner = trim($data[3] ?? '');
+                            $csv_trailer = trim($data[4] ?? '');
+                            $csv_status = trim($data[5] ?? 'showing');
+                            
+                            if ($csv_title && $csv_duration > 0) {
+                                $movieController->addMovie($csv_title, $csv_desc, $csv_duration, $csv_banner, $csv_trailer, $csv_status);
+                                $imported++;
+                            }
+                        }
+                    }
+                    fclose($handle);
+                    $message = "Đã import thành công $imported phim.";
+                } else {
+                    $message = "Chỉ hỗ trợ file CSV.";
+                }
+            } else {
+                $message = "Lỗi upload file.";
+            }
+        }
+        
+        if ($message !== '') {
+            $_SESSION['message'] = $message;
+            header("Location: movies.php");
+            exit();
         }
     }
+}
+
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    unset($_SESSION['message']);
 }
 
 $movies = $movieController->getAllMovies();
@@ -44,10 +90,16 @@ ob_start();
 
 <div class="flex justify-between items-center mb-6">
     <h1 class="text-2xl font-bold text-gray-800">Phims Management</h1>
-    <button onclick="openModal('addModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm flex items-center">
-        <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-        Add New Phim
-    </button>
+    <div class="flex space-x-2">
+        <button onclick="openModal('importModal')" class="bg-green-600 text-white px-4 py-2 rounded-md font-medium hover:bg-green-700 transition shadow-sm flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            Import CSV
+        </button>
+        <button onclick="openModal('addModal')" class="bg-blue-600 text-white px-4 py-2 rounded-md font-medium hover:bg-blue-700 transition shadow-sm flex items-center">
+            <svg class="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Add New Phim
+        </button>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
@@ -104,8 +156,9 @@ ob_start();
 </div>
 
 <!-- Add Phim Modal -->
-<div id="addModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity">
-    <div class="relative top-10 mx-auto p-6 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
+<div id="addModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 transition-opacity overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4">
+        <div class="relative w-full max-w-lg p-6 bg-white border rounded-xl shadow-2xl">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Add New Phim</h3>
         <form method="POST" action="movies.php">
             <input type="hidden" name="action" value="add">
@@ -143,12 +196,36 @@ ob_start();
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">Lưu phim</button>
             </div>
         </form>
+        </div>
+    </div>
+</div>
+
+<!-- Import Phim Modal -->
+<div id="importModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 transition-opacity overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4">
+        <div class="relative w-full max-w-md p-6 bg-white border rounded-xl shadow-2xl">
+        <h3 class="text-xl font-bold text-gray-900 mb-4">Import phim</h3>
+        <p class="text-sm text-gray-500 mb-4">Tải lên file CSV chứa danh sách phim. File CSV có thể có các cột: Tiêu đề, Mô tả, Thời lượng (phút), Link ảnh bìa, Link trailer, Trạng thái (showing/stopped). (Cột đầu tiên là tiêu đề sẽ bị bỏ qua).</p>
+        <p class="text-sm text-gray-500 mb-4">Ví dụ:<br/><code>Tiêu đề, Mô tả, Thời lượng, Banner, Trailer, Status<br/>Inception, Giấc mơ trong giấc mơ, 148, , , showing<br/>Avatar, Người ngoài hành tinh, 162, , , stopped</code></p>
+        <form method="POST" action="movies.php" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="import">
+            <div class="mb-5">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">File CSV</label>
+                <input type="file" name="import_file" accept=".csv" required class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div class="flex justify-end space-x-3">
+                <button type="button" onclick="closeModal('importModal')" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium rounded-lg transition">Hủy</button>
+                <button type="submit" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg transition">Tải lên & Import</button>
+            </div>
+        </form>
+        </div>
     </div>
 </div>
 
 <!-- Sửa Phim Modal -->
-<div id="editModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity">
-    <div class="relative top-10 mx-auto p-6 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
+<div id="editModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 transition-opacity overflow-y-auto">
+    <div class="min-h-full flex items-center justify-center p-4">
+        <div class="relative w-full max-w-lg p-6 bg-white border rounded-xl shadow-2xl">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Sửa Phim</h3>
         <form method="POST" action="movies.php">
             <input type="hidden" name="action" value="edit">
@@ -187,6 +264,7 @@ ob_start();
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition">Cập nhật Phim</button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 

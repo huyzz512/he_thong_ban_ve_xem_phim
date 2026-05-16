@@ -1,4 +1,7 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 require_once '../../config/Database.php';
 require_once '../../Models/RoomModel.php';
 require_once '../../Controllers/RoomController.php';
@@ -55,7 +58,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "Lỗi upload file.";
             }
         }
+        
+        if ($message !== '') {
+            $_SESSION['message'] = $message;
+            header("Location: rooms.php?cinema_id=" . urlencode($cinema_id));
+            exit();
+        }
     }
+}
+
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    unset($_SESSION['message']);
 }
 
 // Fetch real rooms for this cinema

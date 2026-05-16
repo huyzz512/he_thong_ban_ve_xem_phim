@@ -112,6 +112,14 @@
             const modal = document.getElementById(id);
             if(modal) modal.classList.add('hidden');
         }
+
+        // Move all modals to body to prevent 'transform' or 'overflow' containing block issues
+        document.addEventListener('DOMContentLoaded', () => {
+            const modals = document.querySelectorAll('[id$="Modal"]');
+            modals.forEach(modal => {
+                document.body.appendChild(modal);
+            });
+        });
     </script>
 </body>
 </html>
