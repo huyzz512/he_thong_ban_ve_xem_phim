@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once '../../config/admin_guard.php';
 require_once '../../config/Database.php';
 require_once '../../Models/MovieModel.php';
 require_once '../../Controllers/MovieController.php';
@@ -16,6 +14,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $action = $_POST['action'];
         $title = $_POST['title'] ?? '';
         $description = $_POST['description'] ?? '';
+        $genre = $_POST['genre'] ?? '';
         $duration_minutes = (int)($_POST['duration_minutes'] ?? 0);
         $banner_url = $_POST['banner_url'] ?? '';
         $trailer_url = $_POST['trailer_url'] ?? '';
@@ -23,10 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = $_POST['id'] ?? null;
 
         if ($action === 'add') {
-            $result = $movieController->addMovie($title, $description, $duration_minutes, $banner_url, $trailer_url, $status);
+            $result = $movieController->addMovie($title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status);
             $message = $result['message'];
         } elseif ($action === 'edit' && $id) {
-            $result = $movieController->updateMovie($id, $title, $description, $duration_minutes, $banner_url, $trailer_url, $status);
+            $result = $movieController->updateMovie($id, $title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status);
             $message = $result['message'];
         } elseif ($action === 'delete' && $id) {
             $result = $movieController->deleteMovie($id);
@@ -136,12 +135,14 @@ ob_start();
                     <td class="px-6 py-4 text-sm">
                         <?php if ($movie['status'] === 'showing'): ?>
                             <span class="px-2 py-1 bg-green-100 text-green-700 border border-green-200 rounded font-medium text-xs">Đang chiếu</span>
+                        <?php elseif ($movie['status'] === 'upcoming'): ?>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-700 border border-blue-200 rounded font-medium text-xs">Sắp chiếu</span>
                         <?php else: ?>
                             <span class="px-2 py-1 bg-gray-100 text-gray-700 border border-gray-200 rounded font-medium text-xs">Ngừng chiếu</span>
                         <?php endif; ?>
                     </td>
                     <td class="px-6 py-4 text-sm text-right space-x-3">
-                        <button onclick="openSửaModal('<?php echo $movie['id']; ?>', '<?php echo addslashes($movie['title']); ?>', '<?php echo addslashes($movie['description']); ?>', '<?php echo $movie['duration_minutes']; ?>', '<?php echo addslashes($movie['banner_url']); ?>', '<?php echo addslashes($movie['trailer_url']); ?>', '<?php echo $movie['status']; ?>')" class="text-blue-600 font-medium hover:text-blue-800">Sửa</button>
+                        <button onclick="openSửaModal('<?php echo $movie['id']; ?>', '<?php echo addslashes($movie['title']); ?>', '<?php echo addslashes($movie['description']); ?>', '<?php echo addslashes($movie['genre']); ?>', '<?php echo $movie['duration_minutes']; ?>', '<?php echo addslashes($movie['banner_url']); ?>', '<?php echo addslashes($movie['trailer_url']); ?>', '<?php echo $movie['status']; ?>')" class="text-blue-600 font-medium hover:text-blue-800">Sửa</button>
                         <form method="POST" action="movies.php" class="inline" onsubmit="return confirm('Bạn có chắc muốn xóa phim này? Các lịch chiếu và vé liên quan sẽ bị xóa theo.');">
                             <input type="hidden" name="action" value="delete">
                             <input type="hidden" name="id" value="<?php echo $movie['id']; ?>">
@@ -174,6 +175,10 @@ ob_start();
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Mô tả nội dung</label>
                 <textarea name="description" rows="3" class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"></textarea>
             </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Thể loại</label>
+                <input type="text" name="genre" placeholder="VD: Hành động, Hoạt hình, Tình cảm..." class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
+            </div>
             <div class="flex space-x-4 mb-4">
                 <div class="w-1/2">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Thời lượng (minutes)</label>
@@ -183,6 +188,7 @@ ob_start();
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Trạng thái</label>
                     <select name="status" class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
                         <option value="showing">Đang chiếu</option>
+                        <option value="upcoming">Sắp chiếu</option>
                         <option value="stopped">Ngừng chiếu</option>
                     </select>
                 </div>
@@ -242,6 +248,10 @@ ob_start();
                 <label class="block text-sm font-semibold text-gray-700 mb-1">Mô tả nội dung</label>
                 <textarea name="description" id="edit_description" rows="3" class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500"></textarea>
             </div>
+            <div class="mb-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Thể loại</label>
+                <input type="text" name="genre" id="edit_genre" placeholder="VD: Hành động, Hoạt hình..." class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
+            </div>
             <div class="flex space-x-4 mb-4">
                 <div class="w-1/2">
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Thời lượng (minutes)</label>
@@ -251,6 +261,7 @@ ob_start();
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Trạng thái</label>
                     <select name="status" id="edit_status" class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
                         <option value="showing">Đang chiếu</option>
+                        <option value="upcoming">Sắp chiếu</option>
                         <option value="stopped">Ngừng chiếu</option>
                     </select>
                 </div>
@@ -273,10 +284,11 @@ ob_start();
 </div>
 
 <script>
-function openSửaModal(id, title, description, duration, banner, trailer, status) {
+function openSửaModal(id, title, description, genre, duration, banner, trailer, status) {
     document.getElementById('edit_id').value = id;
     document.getElementById('edit_title').value = title;
     document.getElementById('edit_description').value = description;
+    document.getElementById('edit_genre').value = genre;
     document.getElementById('edit_duration').value = duration;
     document.getElementById('edit_banner_url').value = banner;
     document.getElementById('edit_trailer_url').value = trailer;

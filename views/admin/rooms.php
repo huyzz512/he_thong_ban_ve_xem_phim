@@ -1,7 +1,5 @@
 <?php
-if (session_status() === PHP_SESSION_NONE) {
-    session_start();
-}
+require_once '../../config/admin_guard.php';
 require_once '../../config/Database.php';
 require_once '../../Models/RoomModel.php';
 require_once '../../Controllers/RoomController.php';

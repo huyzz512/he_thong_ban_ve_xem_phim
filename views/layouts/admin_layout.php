@@ -37,15 +37,39 @@
 
     <!-- Fixed Dark Sidebar -->
     <aside class="w-64 bg-gray-900 text-white flex flex-col h-full shrink-0">
-        <div class="p-6 text-2xl font-bold border-b border-gray-800 tracking-wider">
-            EAUT Cinema 
+        <div class="p-6 border-b border-gray-800">
+            <div class="text-2xl font-bold tracking-wider text-white">EAUT Cinema</div>
+            <div class="text-xs text-gray-400 mt-1 font-medium uppercase tracking-widest">Admin Panel</div>
         </div>
-        <nav class="flex-1 px-4 py-6 space-y-2">
-            <a href="dashboard.php" class="block px-4 py-3 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition">Tổng quan</a>
-            <a href="cinemas.php" class="block px-4 py-3 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition">Rạp chiếu</a>
-            <a href="movies.php" class="block px-4 py-3 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition">Phim</a>
-            <a href="showtimes.php" class="block px-4 py-3 rounded text-gray-300 hover:bg-gray-800 hover:text-white transition">Lịch chiếu</a>
+        <nav class="flex-1 px-4 py-6 space-y-1">
+            <a href="dashboard.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                Tổng quan
+            </a>
+            <a href="cinemas.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                Rạp chiếu
+            </a>
+            <a href="movies.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z"></path></svg>
+                Phim
+            </a>
+            <a href="showtimes.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                Lịch chiếu
+            </a>
+            <a href="users.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-800 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                Người dùng
+            </a>
         </nav>
+        <!-- Nút về trang chủ ở cuối sidebar -->
+        <div class="p-4 border-t border-gray-800">
+            <a href="../home.php" class="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 hover:bg-green-800/40 hover:text-green-300 transition w-full">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Về Trang Chủ
+            </a>
+        </div>
     </aside>
 
     <!-- Main Content Wrapper -->
@@ -54,9 +78,25 @@
         <!-- Clean Top Navbar -->
         <header class="h-16 bg-white shadow-sm flex items-center justify-between px-8 z-10">
             <h1 class="text-xl font-semibold text-gray-800">Hệ thống Quản lý</h1>
-            <div class="flex items-center space-x-5">
-                <span class="text-sm font-medium text-gray-600 border-r border-gray-200 pr-5">Xin chào, Quản trị viên</span>
-                <a href="../home.html" class="px-4 py-2 bg-green-50 text-green-600 rounded-md hover:bg-green-100 transition font-medium text-sm">Trang chủ</a>
+            <div class="flex items-center space-x-4">
+                <?php if (session_status() === PHP_SESSION_NONE) { session_start(); } ?>
+                <div class="flex items-center gap-3 border-r border-gray-200 pr-4">
+                    <div class="w-8 h-8 rounded-full bg-gray-800 flex items-center justify-center text-white text-sm font-bold">
+                        <?php echo isset($_SESSION['user_name']) ? mb_substr($_SESSION['user_name'], 0, 1, 'UTF-8') : 'A'; ?>
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-800"><?php echo htmlspecialchars($_SESSION['user_name'] ?? 'Admin'); ?></p>
+                        <p class="text-xs text-gray-400">Quản trị viên</p>
+                    </div>
+                </div>
+                <a href="../home.php" class="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition font-medium text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                    Trang chủ
+                </a>
+                <a href="../auth/logout.php" class="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition font-medium text-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                    Đăng xuất
+                </a>
             </div>
         </header>
 

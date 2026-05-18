@@ -1,4 +1,4 @@
-﻿<?php
-header('Location: views/admin/dashboard.php');
+<?php
+header('Location: views/home.php');
 exit();
 ?>

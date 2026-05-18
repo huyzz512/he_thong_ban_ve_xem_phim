@@ -1,4 +1,5 @@
 <?php
+require_once '../../config/admin_guard.php';
 require_once '../../config/Database.php';
 require_once '../../Models/ShowtimeModel.php';
 require_once '../../Controllers/ShowtimeController.php';

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 class MovieController {
     private $movieModel;
@@ -15,22 +15,22 @@ class MovieController {
         return $this->movieModel->getMovieById($id);
     }
 
-    public function addMovie($title, $description, $duration_minutes, $banner_url, $trailer_url, $status) {
+    public function addMovie($title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status) {
         if(empty($title) || empty($duration_minutes)) {
             return ["status" => "error", "message" => "Vui lòng nhập tiêu đề và thời lượng."];
         }
-        $success = $this->movieModel->createMovie($title, $description, $duration_minutes, $banner_url, $trailer_url, $status);
+        $success = $this->movieModel->createMovie($title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status);
         if ($success) {
             return ["status" => "success", "message" => "Thêm phim thành công."];
         }
         return ["status" => "error", "message" => "Lỗi: Không thể thêm phim."];
     }
 
-    public function updateMovie($id, $title, $description, $duration_minutes, $banner_url, $trailer_url, $status) {
+    public function updateMovie($id, $title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status) {
         if(empty($title) || empty($duration_minutes)) {
             return ["status" => "error", "message" => "Vui lòng nhập tiêu đề và thời lượng."];
         }
-        $success = $this->movieModel->updateMovie($id, $title, $description, $duration_minutes, $banner_url, $trailer_url, $status);
+        $success = $this->movieModel->updateMovie($id, $title, $description, $genre, $duration_minutes, $banner_url, $trailer_url, $status);
         if ($success) {
             return ["status" => "success", "message" => "Cập nhật phim thành công."];
         }
@@ -46,4 +46,3 @@ class MovieController {
     }
 }
 ?>
-
