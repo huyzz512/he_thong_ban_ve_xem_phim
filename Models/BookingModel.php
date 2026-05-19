@@ -85,8 +85,27 @@ class BookingModel {
 
     /** Xác nhận booking (pending → completed) */
     public function confirmBooking($booking_id) {
-        $stmt = $this->conn->prepare("UPDATE bookings SET status='completed' WHERE id=?");
+        $stmt = $this->conn->prepare("UPDATE bookings SET status='completed', paid_at=NOW() WHERE id=?");
         return $stmt->execute([$booking_id]);
+    }
+
+    /** Lấy tất cả bookings của một user */
+    public function getBookingsByUser($user_id) {
+        $stmt = $this->conn->prepare("
+            SELECT b.id, b.total_amount, b.status, b.payment_method, b.payment_ref, b.created_at, b.paid_at,
+                   m.title as movie_title, m.banner_url,
+                   st.start_time, st.end_time,
+                   c.name as cinema_name, r.name as room_name
+            FROM bookings b
+            JOIN showtimes st ON st.id = b.showtime_id
+            JOIN movies m ON m.id = st.movie_id
+            JOIN rooms r ON r.id = st.room_id
+            JOIN cinemas c ON c.id = r.cinema_id
+            WHERE b.user_id = ?
+            ORDER BY b.created_at DESC
+        ");
+        $stmt->execute([$user_id]);
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 ?>

@@ -1,16 +1,22 @@
 <?php
 require_once 'config/Database.php';
 $db = (new Database())->getConnection();
-echo "=== DESCRIBE booking_details ===\n";
-$cols = $db->query("DESCRIBE booking_details")->fetchAll();
-foreach ($cols as $c) echo "  {$c['Field']} | {$c['Type']} | key:{$c['Key']}\n";
 
-echo "\n=== SAMPLE DATA in seats ===\n";
-$rows = $db->query("SELECT * FROM seats LIMIT 10")->fetchAll();
-foreach ($rows as $r) echo "  id:{$r['id']} room:{$r['room_id']} row:{$r['row_name']} col:{$r['col_number']} type:{$r['type']}\n";
-if (empty($rows)) echo "  (no seats yet)\n";
+echo "=== DESCRIBE cinemas ===\n";
+foreach ($db->query("DESCRIBE cinemas")->fetchAll() as $c)
+    echo "  {$c['Field']} | {$c['Type']} | key:{$c['Key']}\n";
 
-echo "\n=== SAMPLE DATA in rooms ===\n";
-$rows = $db->query("SELECT * FROM rooms LIMIT 10")->fetchAll();
-foreach ($rows as $r) echo "  id:{$r['id']} cinema:{$r['cinema_id']} name:{$r['name']} rows:{$r['total_rows']} cols:{$r['total_columns']}\n";
+echo "\n=== DESCRIBE bookings ===\n";
+foreach ($db->query("DESCRIBE bookings")->fetchAll() as $c)
+    echo "  {$c['Field']} | {$c['Type']} | key:{$c['Key']}\n";
+
+// Migration: thêm bank fields vào cinemas
+$cols = ['bank_id VARCHAR(20) DEFAULT NULL', 'bank_account_no VARCHAR(30) DEFAULT NULL',
+         'bank_account_name VARCHAR(100) DEFAULT NULL'];
+foreach ($cols as $col) {
+    $name = explode(' ', $col)[0];
+    try { $db->exec("ALTER TABLE cinemas ADD COLUMN $col"); echo "\n✅ Thêm $name vào cinemas"; }
+    catch(Exception $e) { echo "\nℹ️ $name: " . $e->getMessage(); }
+}
+echo "\n✅ Migration hoàn tất\n";
 ?>

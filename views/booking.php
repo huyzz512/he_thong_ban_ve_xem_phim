@@ -34,8 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['confirm_booking'])) {
         }
         $booking_id = $bookingModel->createBooking($_SESSION['user_id'], $showtime_id, $seat_ids, $prices);
         if ($booking_id) {
-            $bookingModel->confirmBooking($booking_id);
-            header("Location: booking_success.php?id=$booking_id");
+            // Redirect sang trang thanh toán (chưa xác nhận booking)
+            header("Location: payment.php?id=$booking_id");
             exit();
         }
         $bookingError = 'Đã xảy ra lỗi. Vui lòng thử lại.';
