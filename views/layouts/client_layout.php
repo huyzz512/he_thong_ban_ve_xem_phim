@@ -1,9 +1,17 @@
+<?php
+if (session_status() === PHP_SESSION_NONE) { session_start(); }
+$doc_root = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])), '/');
+$views_dir = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/..')), '/');
+$relative = str_replace($doc_root, '', $views_dir);
+$base_url = '/' . implode('/', array_map('rawurlencode', explode('/', trim($relative, '/'))));
+?>
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EAUT Cinema - Đặt Vé Xem Phim Nhanh Chóng</title>
+    <link rel="icon" type="image/png" href="<?php echo $base_url; ?>/assets/images/favicon.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -34,17 +42,18 @@
     <header class="bg-secondary text-white sticky top-0 z-50 shadow-md">
         <nav class="container mx-auto px-4 py-3 flex items-center justify-between">
             <?php
-            if (session_status() === PHP_SESSION_NONE) { session_start(); }
-            // Build a correctly URL-encoded base path from filesystem paths
-            $doc_root = rtrim(str_replace('\\', '/', realpath($_SERVER['DOCUMENT_ROOT'])), '/');
-            $views_dir = rtrim(str_replace('\\', '/', realpath(__DIR__ . '/..')), '/');
-            $relative = str_replace($doc_root, '', $views_dir); // e.g. /Hệ thống bán vé xem phim/views
-            $base_url = implode('/', array_map('rawurlencode', explode('/', trim($relative, '/'))));
-            $base_url = '/' . $base_url; // => /H%E1%BB%87%20th%E1%BB%91ng.../views
+            // $base_url already computed at top of file
             ?>
-            <a href="<?php echo $base_url; ?>/home.php" class="flex items-center gap-2">
-                <span class="text-3xl font-bold text-primary">EAUT</span>
-                <span class="text-3xl font-light text-white">Cinema</span>
+            <a href="<?php echo $base_url; ?>/home.php" class="flex items-center">
+                <img src="<?php echo $base_url; ?>/assets/images/logo.png"
+                     alt="EAUT Cinema"
+                     class="h-14 w-auto object-contain"
+                     style="mix-blend-mode: normal;"
+                     onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+                <span class="hidden items-center gap-2">
+                    <span class="text-3xl font-bold text-primary">EAUT</span>
+                    <span class="text-3xl font-light text-white">Cinema</span>
+                </span>
             </a>
 
             <div class="hidden md:flex items-center gap-6 font-medium">
@@ -124,12 +133,15 @@
     <footer class="bg-secondary text-gray-400 mt-12 border-t-4 border-primary">
         <div class="container mx-auto px-4 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-                <a href="<?php echo $base_url; ?>/home.php" class="flex items-center gap-2 mb-4">
-                    <span class="text-2xl font-bold text-primary">EAUT</span>
-                    <span class="text-2xl font-light text-white">Cinema</span>
+                <a href="<?php echo $base_url; ?>/home.php" class="flex items-center mb-4">
+                    <img src="<?php echo $base_url; ?>/assets/images/logo.png"
+                         alt="EAUT Cinema" class="h-10 w-auto object-contain"
+                         style="filter: brightness(0) invert(1) sepia(1) saturate(5) hue-rotate(330deg);"
+                         onerror="this.style.display='none'">
                 </a>
                 <p class="text-sm">Hệ thống rạp chiếu phim hiện đại hàng đầu. Trải nghiệm điện ảnh đỉnh cao.</p>
             </div>
+
             <div class="text-sm">
                 <h4 class="font-bold text-white mb-4">Chính Sách</h4>
                 <ul class="space-y-2">

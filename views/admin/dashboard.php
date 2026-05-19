@@ -33,7 +33,7 @@ ob_start();
         </div>
         <div>
             <p class="text-sm font-medium text-gray-500 mb-1">Tổng doanh thu</p>
-            <p class="text-2xl font-bold text-gray-900">$<?php echo number_format($stats['total_revenue'], 2); ?></p>
+            <p class="text-2xl font-bold text-gray-900"><?php echo number_format($stats['total_revenue'], 0, ',', '.'); ?> VNĐ</p>
         </div>
     </div>
     
@@ -93,7 +93,7 @@ ob_start();
                         <tr class="hover:bg-gray-50/50 transition">
                             <td class="px-6 py-4 text-sm text-gray-900 font-medium"><?php echo htmlspecialchars($row['movie_title']); ?></td>
                             <td class="px-6 py-4 text-sm text-gray-600"><?php echo number_format($row['tickets_sold']); ?></td>
-                            <td class="px-6 py-4 text-sm text-green-600 font-semibold">$<?php echo number_format($row['total_revenue'], 2); ?></td>
+                            <td class="px-6 py-4 text-sm text-green-600 font-semibold"><?php echo number_format($row['total_revenue'], 0, ',', '.'); ?> VNĐ</td>
                         </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
@@ -118,10 +118,10 @@ ob_start();
             <div class="p-5 bg-blue-50 rounded-lg mt-6 border border-blue-100">
                 <div class="flex items-center mb-3">
                     <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                    <h3 class="text-sm font-bold text-blue-800">Dynamic Giá vé Active</h3>
+                    <h3 class="text-sm font-bold text-blue-800">Bảng giá vé động đang hoạt động</h3>
                 </div>
                 <p class="text-xs text-blue-600 leading-relaxed">
-                    The pricing matrix applies additional charges automatically based on the Showtime configuration (VIP seats: +20%, Lễidays: +15%, Giờ vàngen Hours: +10%) leading to dynamic revenue scaling in real-time.
+                    Hệ thống tự động áp dụng phụ phí theo cấu hình suất chiếu: Ghế VIP +30%, Ngày lễ +15%, Giờ vàng +10% — giúp tối ưu doanh thu theo từng thời điểm một cách tự động.
                 </p>
             </div>
         </div>

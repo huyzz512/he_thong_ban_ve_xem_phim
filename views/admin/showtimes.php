@@ -90,13 +90,13 @@ ob_start();
                         <div class="text-xs text-gray-500"><?php echo htmlspecialchars($st['room_name']); ?></div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm text-gray-900 font-medium"><?php echo date('M d, Y', strtotime($st['start_time'])); ?></div>
+                        <div class="text-sm text-gray-900 font-medium"><?php echo date('d/m/Y', strtotime($st['start_time'])); ?></div>
                         <div class="text-xs text-gray-500 mt-1">
                             <span class="bg-gray-100 px-2 py-1 rounded text-gray-700 border border-gray-200"><?php echo date('H:i', strtotime($st['start_time'])); ?> - <?php echo date('H:i', strtotime($st['end_time'])); ?></span>
                         </div>
                     </td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-semibold text-green-600">$<?php echo number_format($st['base_price'], 2); ?></div>
+                        <div class="text-sm font-semibold text-green-600"><?php echo number_format($st['base_price'], 0, ',', '.'); ?> VNĐ</div>
                         <div class="text-xs space-x-1 mt-1 flex">
                             <?php if ($st['is_holiday']): ?><span class="px-1 bg-red-100 text-red-700 rounded border border-red-200">Lễ</span><?php endif; ?>
                             <?php if ($st['is_golden_hour']): ?><span class="px-1 bg-yellow-100 text-yellow-700 rounded border border-yellow-200">Giờ vàng</span><?php endif; ?>
@@ -113,7 +113,7 @@ ob_start();
                 <?php endforeach; ?>
             <?php else: ?>
                 <tr>
-                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">No showtimes scheduled. Click "Lên lịch chiếu mới" to get started.</td>
+                    <td colspan="5" class="px-6 py-8 text-center text-gray-500">Chưa có lịch chiếu nào. Nhấn "Lên lịch chiếu mới" để bắt đầu.</td>
                 </tr>
             <?php endif; ?>
         </tbody>
@@ -125,17 +125,17 @@ ob_start();
     <div class="relative top-10 mx-auto p-6 border w-full max-w-lg shadow-2xl rounded-xl bg-white">
         <h3 class="text-xl font-bold text-gray-900 mb-4">Lên lịch chiếu mới</h3>
         <p class="text-xs text-gray-600 mb-4 bg-yellow-50 p-3 rounded border border-yellow-200 leading-relaxed">
-            <strong class="text-yellow-800">Thuật toán Check trùng lặp Bật:</strong> The system will auto-calculate the End Time (Phim Thời lượng + 15 mins cleaning buffer) and will explicitly reject the schedule if it overlaps with an existing showtime in the chosen room.
+            <strong class="text-yellow-800">Kiểm tra trùng lặp tự động:</strong> Hệ thống sẽ tự tính giờ kết thúc (thời lượng phim + 15 phút dọn phòng) và từ chối nếu suất chiếu bị trùng với suất khác trong cùng phòng.
         </p>
         <form method="POST" action="showtimes.php">
             <input type="hidden" name="action" value="add">
             
             <div class="mb-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Select Phim</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Chọn Phim</label>
                 <select name="movie_id" required class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="">-- Choose a Phim --</option>
+                    <option value="">-- Chọn một phim --</option>
                     <?php foreach ($movies as $m): ?>
-                        <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['title']); ?> (<?php echo $m['duration_minutes']; ?> mins)</option>
+                        <option value="<?php echo $m['id']; ?>"><?php echo htmlspecialchars($m['title']); ?> (<?php echo $m['duration_minutes']; ?> phút)</option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -156,21 +156,21 @@ ob_start();
                     <input type="datetime-local" name="start_time" required class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
                 </div>
                 <div class="w-1/2">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Giá vé gốc</label>
-                    <input type="number" step="0.01" name="base_price" required class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Giá vé gốc (VNĐ)</label>
+                    <input type="number" step="1000" min="0" name="base_price" required placeholder="VD: 75000" class="w-full border border-gray-300 rounded-lg shadow-sm p-2.5 focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
 
             <div class="mb-6 bg-gray-50 p-3 rounded-lg border border-gray-200">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Giá vé Matrix Rules (Optional)</label>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Phụ phí giá vé (tuỳ chọn)</label>
                 <div class="flex space-x-6">
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" name="is_holiday" class="rounded text-blue-600 w-4 h-4 mr-2">
-                        <span class="text-sm text-gray-700">Lễiday (+15%)</span>
+                        <span class="text-sm text-gray-700">Ngày lễ (+15%)</span>
                     </label>
                     <label class="flex items-center cursor-pointer">
                         <input type="checkbox" name="is_golden_hour" class="rounded text-blue-600 w-4 h-4 mr-2">
-                        <span class="text-sm text-gray-700">Giờ vàngen Hour (+10%)</span>
+                        <span class="text-sm text-gray-700">Giờ vàng (+10%)</span>
                     </label>
                 </div>
             </div>
