@@ -57,6 +57,31 @@ class ReportModel {
         $stmt->execute([$from_date, $to_date]);
         return $stmt->fetchAll();
     }
+
+    // 4. Revenue by Time of Day (Khung giờ)
+    public function getRevenueByTimeFrame() {
+        $query = "
+            SELECT 
+                CASE 
+                    WHEN HOUR(s.start_time) >= 8 AND HOUR(s.start_time) < 12 THEN 'Sáng (08:00 - 12:00)'
+                    WHEN HOUR(s.start_time) >= 12 AND HOUR(s.start_time) < 17 THEN 'Chiều (12:00 - 17:00)'
+                    WHEN HOUR(s.start_time) >= 17 AND HOUR(s.start_time) < 23 THEN 'Tối (17:00 - 23:00)'
+                    ELSE 'Khuya (23:00 - 08:00)'
+                END AS time_frame,
+                SUM(b.total_amount) AS total_revenue,
+                COUNT(b.id) AS booking_count
+            FROM bookings b
+            JOIN showtimes s ON b.showtime_id = s.id
+            WHERE b.status = 'completed'
+            GROUP BY time_frame
+            ORDER BY total_revenue DESC
+        ";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // 5. Rich Stats for Dashboard (combining all stats)
     public function getDashboardStats() {
         $stats = [];
         
@@ -66,17 +91,59 @@ class ReportModel {
         $stmt1->execute();
         $stats['total_revenue'] = $stmt1->fetch()['total'];
 
+        // Today Revenue
+        $queryToday = "SELECT COALESCE(SUM(total_amount), 0) as total FROM bookings WHERE status = 'completed' AND DATE(created_at) = CURDATE()";
+        $stmtToday = $this->conn->prepare($queryToday);
+        $stmtToday->execute();
+        $stats['revenue_today'] = $stmtToday->fetch()['total'];
+
+        // This Week Revenue
+        $queryWeek = "SELECT COALESCE(SUM(total_amount), 0) as total FROM bookings WHERE status = 'completed' AND YEARWEEK(created_at, 1) = YEARWEEK(CURDATE(), 1)";
+        $stmtWeek = $this->conn->prepare($queryWeek);
+        $stmtWeek->execute();
+        $stats['revenue_week'] = $stmtWeek->fetch()['total'];
+
+        // This Month Revenue
+        $queryMonth = "SELECT COALESCE(SUM(total_amount), 0) as total FROM bookings WHERE status = 'completed' AND MONTH(created_at) = MONTH(CURDATE()) AND YEAR(created_at) = YEAR(CURDATE())";
+        $stmtMonth = $this->conn->prepare($queryMonth);
+        $stmtMonth->execute();
+        $stats['revenue_month'] = $stmtMonth->fetch()['total'];
+
+        // This Year Revenue
+        $queryYear = "SELECT COALESCE(SUM(total_amount), 0) as total FROM bookings WHERE status = 'completed' AND YEAR(created_at) = YEAR(CURDATE())";
+        $stmtYear = $this->conn->prepare($queryYear);
+        $stmtYear->execute();
+        $stats['revenue_year'] = $stmtYear->fetch()['total'];
+
         // Active Movies
         $query2 = "SELECT COUNT(*) as total FROM movies WHERE status = 'showing'";
         $stmt2 = $this->conn->prepare($query2);
         $stmt2->execute();
         $stats['active_movies'] = $stmt2->fetch()['total'];
 
-        // Total Bookings
+        // Total Bookings (Giao dịch)
         $query3 = "SELECT COUNT(*) as total FROM bookings";
         $stmt3 = $this->conn->prepare($query3);
         $stmt3->execute();
         $stats['total_bookings'] = $stmt3->fetch()['total'];
+
+        // Completed Bookings
+        $queryCompleted = "SELECT COUNT(*) as total FROM bookings WHERE status = 'completed'";
+        $stmtCompleted = $this->conn->prepare($queryCompleted);
+        $stmtCompleted->execute();
+        $stats['completed_bookings'] = $stmtCompleted->fetch()['total'];
+
+        // Cancelled Bookings
+        $queryCancelled = "SELECT COUNT(*) as total FROM bookings WHERE status = 'cancelled'";
+        $stmtCancelled = $this->conn->prepare($queryCancelled);
+        $stmtCancelled->execute();
+        $stats['cancelled_bookings'] = $stmtCancelled->fetch()['total'];
+
+        // Pending Bookings
+        $queryPending = "SELECT COUNT(*) as total FROM bookings WHERE status = 'pending'";
+        $stmtPending = $this->conn->prepare($queryPending);
+        $stmtPending->execute();
+        $stats['pending_bookings'] = $stmtPending->fetch()['total'];
 
         // Total Cinemas
         $query4 = "SELECT COUNT(*) as total FROM cinemas";
@@ -89,6 +156,12 @@ class ReportModel {
         $stmt5 = $this->conn->prepare($query5);
         $stmt5->execute();
         $stats['total_showtimes'] = $stmt5->fetch()['total'];
+
+        // Total Tickets Sold (Tổng số vé đã bán)
+        $queryTickets = "SELECT COUNT(*) as total FROM booking_details bd JOIN bookings b ON bd.booking_id = b.id WHERE b.status = 'completed'";
+        $stmtTickets = $this->conn->prepare($queryTickets);
+        $stmtTickets->execute();
+        $stats['total_tickets_sold'] = $stmtTickets->fetch()['total'];
 
         return $stats;
     }
